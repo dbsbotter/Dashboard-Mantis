@@ -1,0 +1,310 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Dashboard CurrencyCulture="pt-BR">
+  <Title Text="Mantis - Casos com retorno" />
+  <DataSources>
+    <SqlDataSource ComponentName="dashboardSqlDataSource1">
+      <Name>SQL Data Source 1</Name>
+      <Connection Name="mysql09.aflinformatica.com.br_aflinformatica8Connection" ProviderKey="MySql">
+        <Parameters>
+          <Parameter Name="server" Value="mysql09.aflinformatica.com.br" />
+          <Parameter Name="database" Value="aflinformatica8" />
+          <Parameter Name="read only" Value="1" />
+          <Parameter Name="generateConnectionHelper" Value="false" />
+          <Parameter Name="Port" Value="3306" />
+          <Parameter Name="userid" Value="aflinformatica8" />
+          <Parameter Name="password" Value="aslo02sisk" />
+        </Parameters>
+      </Connection>
+      <Query Type="CustomSqlQuery" Name="CustomSqlQuery">
+        <Sql>select 
+mantis_bug_table.id as "Código",
+mantis_project_table.name as "Projeto",
+mantis_custom_field_string_table.value as "Cliente",
+mantis_bug_table.summary as "Descrição",
+mantis_category_table.name as "Categoria",
+CASE mantis_bug_table.priority 
+	WHEN 10 THEN "Nenhum"
+	WHEN 20 THEN "Baixo"
+	WHEN 30 THEN "Normal"
+	WHEN 40 THEN "Alto"
+	WHEN 50 THEN "Urgente"
+	WHEN 60 THEN "Imediato"
+	ELSE "Não atribuido"
+END AS "Prioridade",
+CASE mantis_bug_table.severity
+	WHEN 10 THEN "Recurso"
+	WHEN 20 THEN "Trivial"
+	WHEN 30 THEN "Texto"
+	WHEN 40 THEN "Minimo"
+	WHEN 50 THEN "Pequeno"
+	WHEN 60 THEN "Grande"
+	WHEN 70 THEN "Travamento"
+	WHEN 80 THEN "Obstaculo"
+	ELSE "Não atribuido"
+END AS "Severidade",
+CASE mantis_bug_table.status
+	WHEN 10 THEN "Novo"
+	WHEN 20 THEN "Retorno"
+	WHEN 30 THEN "Admitido"
+	WHEN 40 THEN "Confirmado"
+	WHEN 50 THEN "Atribuído"
+	WHEN 80 THEN "Resolvido"
+	WHEN 90 THEN "Fechado"
+END AS "Status",
+CASE mantis_bug_table.resolution
+	WHEN 10 THEN "Aberto"
+	WHEN 20 THEN "Fixado"
+	WHEN 30 THEN "Reaberto"
+	WHEN 40 THEN "Incapaz de reproduzir"
+	WHEN 50 THEN "Não fixado"
+	WHEN 60 THEN "Duplicado"
+	WHEN 70 THEN "Não é um bug"
+	WHEN 80 THEN "Suspenso"
+	WHEN 90 THEN "Não será corrigido"
+END AS "Resolução",
+FROM_UNIXTIME(mantis_bug_table.date_submitted) as "Data de abertura",
+FROM_UNIXTIME(mantis_bug_table.last_updated) as "Ultima atualização",
+case when mantis_bug_table.status in (80,90) then DATEDIFF(FROM_UNIXTIME(mantis_bug_table.last_updated),FROM_UNIXTIME(mantis_bug_table.date_submitted))
+     else DATEDIFF(now(),FROM_UNIXTIME(mantis_bug_table.date_submitted))
+end as "Tempo aberto ou para resolver",
+count(mantis_bug_history_table.id) as "Qtde Retornos"
+from mantis_bug_history_table
+LEFT join mantis_bug_table on mantis_bug_history_table.bug_id = mantis_bug_table.id
+LEFT join mantis_project_table on mantis_project_table.id = mantis_bug_table.project_id
+LEFT join mantis_category_table on mantis_category_table.id = mantis_bug_table.category_id
+left join mantis_custom_field_string_table on mantis_custom_field_string_table.bug_id = mantis_bug_table.id
+where mantis_bug_history_table.field_name = "status"
+and mantis_bug_history_table.new_value = 20
+and mantis_custom_field_string_table.field_id = 6
+group by 
+mantis_bug_table.id,
+mantis_project_table.name,
+mantis_custom_field_string_table.value,
+mantis_bug_table.summary,
+mantis_category_table.name,
+CASE mantis_bug_table.priority 
+	WHEN 10 THEN "Nenhum"
+	WHEN 20 THEN "Baixo"
+	WHEN 30 THEN "Normal"
+	WHEN 40 THEN "Alto"
+	WHEN 50 THEN "Urgente"
+	WHEN 60 THEN "Imediato"
+	ELSE "Não atribuido"
+END,
+CASE mantis_bug_table.severity
+	WHEN 10 THEN "Recurso"
+	WHEN 20 THEN "Trivial"
+	WHEN 30 THEN "Texto"
+	WHEN 40 THEN "Minimo"
+	WHEN 50 THEN "Pequeno"
+	WHEN 60 THEN "Grande"
+	WHEN 70 THEN "Travamento"
+	WHEN 80 THEN "Obstaculo"
+	ELSE "Não atribuido"
+END,
+CASE mantis_bug_table.status
+	WHEN 10 THEN "Novo"
+	WHEN 20 THEN "Retorno"
+	WHEN 30 THEN "Admitido"
+	WHEN 40 THEN "Confirmado"
+	WHEN 50 THEN "Atribuído"
+	WHEN 80 THEN "Resolvido"
+	WHEN 90 THEN "Fechado"
+END,
+CASE mantis_bug_table.resolution
+	WHEN 10 THEN "Aberto"
+	WHEN 20 THEN "Fixado"
+	WHEN 30 THEN "Reaberto"
+	WHEN 40 THEN "Incapaz de reproduzir"
+	WHEN 50 THEN "Não fixado"
+	WHEN 60 THEN "Duplicado"
+	WHEN 70 THEN "Não é um bug"
+	WHEN 80 THEN "Suspenso"
+	WHEN 90 THEN "Não será corrigido"
+END,
+FROM_UNIXTIME(mantis_bug_table.date_submitted),
+FROM_UNIXTIME(mantis_bug_table.last_updated),
+case when mantis_bug_table.status in (80,90) then DATEDIFF(FROM_UNIXTIME(mantis_bug_table.last_updated),FROM_UNIXTIME(mantis_bug_table.date_submitted))
+     else DATEDIFF(now(),FROM_UNIXTIME(mantis_bug_table.date_submitted))
+end
+order by mantis_bug_table.id asc</Sql>
+      </Query>
+      <ResultSchema>
+        <DataSet Name="SQL Data Source 1">
+          <View Name="CustomSqlQuery">
+            <Field Name="Código" Type="UInt32" />
+            <Field Name="Projeto" Type="String" />
+            <Field Name="Cliente" Type="String" />
+            <Field Name="Descrição" Type="String" />
+            <Field Name="Categoria" Type="String" />
+            <Field Name="Prioridade" Type="String" />
+            <Field Name="Severidade" Type="String" />
+            <Field Name="Status" Type="String" />
+            <Field Name="Resolução" Type="String" />
+            <Field Name="Data de abertura" Type="DateTime" />
+            <Field Name="Ultima atualização" Type="DateTime" />
+            <Field Name="Tempo aberto ou para resolver" Type="Int32" />
+            <Field Name="Qtde Retornos" Type="Int64" />
+          </View>
+        </DataSet>
+      </ResultSchema>
+    </SqlDataSource>
+  </DataSources>
+  <Items>
+    <RangeFilter ComponentName="rangeFilterDashboardItem1" Name="Filtro por período" DataSource="dashboardSqlDataSource1" DataMember="CustomSqlQuery">
+      <DataItems>
+        <Dimension DataMember="Data de abertura" DateTimeGroupInterval="MonthYear" UniqueName="DataItem1" />
+        <Measure DataMember="Código" Name="Quantidade de Casos" SummaryType="Count" UniqueName="DataItem0" />
+      </DataItems>
+      <Argument UniqueName="DataItem1" />
+      <Series>
+        <Simple SeriesType="StackedLine">
+          <Value UniqueName="DataItem0" />
+        </Simple>
+      </Series>
+    </RangeFilter>
+    <Pie ComponentName="pieDashboardItem1" Name="Por Prioridade" DataSource="dashboardSqlDataSource1" DataMember="CustomSqlQuery">
+      <InteractivityOptions MasterFilterMode="Multiple" />
+      <DataItems>
+        <Measure DataMember="Código" Name="Casos" SummaryType="Count" UniqueName="DataItem1" />
+        <Dimension DataMember="Prioridade" UniqueName="DataItem0" />
+      </DataItems>
+      <Arguments>
+        <Argument UniqueName="DataItem0" />
+      </Arguments>
+      <Values>
+        <Value UniqueName="DataItem1" />
+      </Values>
+    </Pie>
+    <Pie ComponentName="pieDashboardItem2" Name="Por Severidade" DataSource="dashboardSqlDataSource1" DataMember="CustomSqlQuery">
+      <InteractivityOptions MasterFilterMode="Multiple" />
+      <DataItems>
+        <Measure DataMember="Código" Name="Casos" SummaryType="Count" UniqueName="DataItem1" />
+        <Dimension DataMember="Severidade" UniqueName="DataItem0" />
+      </DataItems>
+      <Arguments>
+        <Argument UniqueName="DataItem0" />
+      </Arguments>
+      <Values>
+        <Value UniqueName="DataItem1" />
+      </Values>
+    </Pie>
+    <Pie ComponentName="pieDashboardItem3" Name="Por Status" DataSource="dashboardSqlDataSource1" DataMember="CustomSqlQuery">
+      <InteractivityOptions MasterFilterMode="Multiple" />
+      <DataItems>
+        <Measure DataMember="Código" Name="Casos" SummaryType="Count" UniqueName="DataItem2" />
+        <Dimension DataMember="Status" UniqueName="DataItem0" />
+      </DataItems>
+      <Arguments>
+        <Argument UniqueName="DataItem0" />
+      </Arguments>
+      <Values>
+        <Value UniqueName="DataItem2" />
+      </Values>
+    </Pie>
+    <Grid ComponentName="gridDashboardItem1" Name="Projetos" DataSource="dashboardSqlDataSource1" DataMember="CustomSqlQuery" IsMasterFilterCrossDataSource="true">
+      <InteractivityOptions MasterFilterMode="Multiple" />
+      <DataItems>
+        <Dimension DataMember="Projeto" SortOrder="Descending" SortByMeasure="DataItem1" UniqueName="DataItem0" />
+        <Measure DataMember="Código" SummaryType="Count" UniqueName="DataItem1">
+          <NumericFormat FormatType="Number" Precision="0" Unit="Ones" IncludeGroupSeparator="true" />
+        </Measure>
+      </DataItems>
+      <GridColumns>
+        <GridDimensionColumn Name="Projeto" Weight="105.98194130925508">
+          <Dimension UniqueName="DataItem0" />
+        </GridDimensionColumn>
+        <GridMeasureColumn Name="Qtde Casos" Weight="44.018058690744923">
+          <Measure UniqueName="DataItem1" />
+        </GridMeasureColumn>
+      </GridColumns>
+      <GridOptions ColumnWidthMode="Manual" />
+    </Grid>
+    <Pie ComponentName="pieDashboardItem5" Name="Por Categoria" DataSource="dashboardSqlDataSource1" DataMember="CustomSqlQuery">
+      <InteractivityOptions MasterFilterMode="Multiple" />
+      <DataItems>
+        <Measure DataMember="Código" Name="Casos" SummaryType="Count" UniqueName="DataItem3" />
+        <Dimension DataMember="Categoria" UniqueName="DataItem0" />
+      </DataItems>
+      <Arguments>
+        <Argument UniqueName="DataItem0" />
+      </Arguments>
+      <Values>
+        <Value UniqueName="DataItem3" />
+      </Values>
+    </Pie>
+    <Grid ComponentName="gridDashboardItem2" Name="Descrição dos Casos" DataSource="dashboardSqlDataSource1" DataMember="CustomSqlQuery">
+      <DataItems>
+        <Dimension DataMember="Descrição" SortOrder="Descending" UniqueName="DataItem3" />
+        <Dimension DataMember="Status" UniqueName="DataItem2" />
+        <Dimension DataMember="Tempo aberto ou para resolver" Name="Tempo" SortOrder="Descending" UniqueName="DataItem1">
+          <NumericFormat FormatType="Number" Precision="0" Unit="Ones" IncludeGroupSeparator="true" />
+        </Dimension>
+        <Dimension DataMember="Código" UniqueName="DataItem0">
+          <NumericFormat FormatType="Number" Precision="0" Unit="Ones" IncludeGroupSeparator="true" />
+        </Dimension>
+        <Dimension DataMember="Qtde Retornos" Name="Retorno(s)" UniqueName="DataItem5">
+          <NumericFormat FormatType="Number" Precision="0" Unit="Ones" IncludeGroupSeparator="true" />
+        </Dimension>
+      </DataItems>
+      <FormatRules>
+        <GridItemFormatRule Name="FormatRule 1" DataItem="DataItem1">
+          <FormatConditionRangeSet ValueType="Number">
+            <RangeSet>
+              <Ranges>
+                <RangeInfo>
+                  <Value Type="System.Int32" Value="0" />
+                  <AppearanceSettings AppearanceType="Green" />
+                </RangeInfo>
+                <RangeInfo>
+                  <Value Type="System.Int32" Value="5" />
+                  <AppearanceSettings AppearanceType="Yellow" />
+                </RangeInfo>
+                <RangeInfo>
+                  <Value Type="System.Int32" Value="15" />
+                  <AppearanceSettings AppearanceType="Red" />
+                </RangeInfo>
+              </Ranges>
+            </RangeSet>
+          </FormatConditionRangeSet>
+        </GridItemFormatRule>
+      </FormatRules>
+      <GridColumns>
+        <GridDimensionColumn Name="Código" Weight="35.042280051595981">
+          <Dimension UniqueName="DataItem0" />
+        </GridDimensionColumn>
+        <GridDimensionColumn Name="Descrição" Weight="190.22952028009249">
+          <Dimension UniqueName="DataItem3" />
+        </GridDimensionColumn>
+        <GridDimensionColumn Weight="50.894740074937019">
+          <Dimension UniqueName="DataItem2" />
+        </GridDimensionColumn>
+        <GridDimensionColumn Weight="43.385680063880741">
+          <Dimension UniqueName="DataItem1" />
+        </GridDimensionColumn>
+        <GridDimensionColumn Weight="49.226060072480067">
+          <Dimension UniqueName="DataItem5" />
+        </GridDimensionColumn>
+      </GridColumns>
+      <GridOptions ColumnWidthMode="Manual" />
+    </Grid>    
+  </Items>
+  <LayoutTree>
+    <LayoutGroup Orientation="Vertical">
+      <LayoutItem DashboardItem="rangeFilterDashboardItem1" Weight="8.8932806324110665" />
+      <LayoutGroup Weight="67.193675889328063">
+        <LayoutGroup Orientation="Vertical" Weight="50.053475935828878">
+          <LayoutItem DashboardItem="gridDashboardItem1" Weight="30.882352941176471" />
+          <LayoutItem DashboardItem="pieDashboardItem3" Weight="35.294117647058826" />
+          <LayoutItem DashboardItem="pieDashboardItem2" Weight="33.8235294117647" />
+        </LayoutGroup>
+        <LayoutGroup Orientation="Vertical" Weight="49.946524064171122">
+          <LayoutItem DashboardItem="pieDashboardItem5" Weight="30.882352941176471" />
+          <LayoutItem DashboardItem="pieDashboardItem1" Weight="35.294117647058826" />
+          <LayoutItem DashboardItem="gridDashboardItem2" Weight="33.8235294117647" />
+        </LayoutGroup>
+      </LayoutGroup>
+      <LayoutItem DashboardItem="gridDashboardItem3" Weight="23.913043478260871" />
+    </LayoutGroup>
+  </LayoutTree>
+</Dashboard>
